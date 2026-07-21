@@ -1,0 +1,16 @@
+# Secrets — ne jamais commiter
+.env
+
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+.vscode/
+
+# Divers
+*.log
+.DS_Store

@@ -1,0 +1,43 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../core/config/supabase_config.dart';
+import '../models/artist.dart';
+import '../models/concert_event.dart';
+import '../models/social_link.dart';
+import '../models/track.dart';
+
+/// Couche d'accès aux contenus (lecture seule) : biographie, morceaux,
+/// événements et liens sociaux. Isole Supabase du reste de l'application.
+class ContentRepository {
+  final SupabaseClient _client;
+
+  ContentRepository({SupabaseClient? client})
+      : _client = client ?? SupabaseConfig.client;
+
+  Future<Artist> fetchArtist() async {
+    final data = await _client.from('artist').select().eq('id', 1).single();
+    return Artist.fromMap(data);
+  }
+
+  Future<List<Track>> fetchTracks() async {
+    final data = await _client.from('tracks').select().order('created_at');
+    return (data as List)
+        .map((e) => Track.fromMap(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<ConcertEvent>> fetchEvents() async {
+    final data = await _client.from('events').select().order('starts_at');
+    return (data as List)
+        .map((e) => ConcertEvent.fromMap(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<SocialLink>> fetchSocialLinks() async {
+    final data =
+        await _client.from('social_links').select().order('sort_order');
+    return (data as List)
+        .map((e) => SocialLink.fromMap(e as Map<String, dynamic>))
+        .toList();
+  }
+}

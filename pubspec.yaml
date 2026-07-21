@@ -1,0 +1,38 @@
+name: styma
+description: "Application mobile STYMA — écosystème d'engagement du public en concert."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  google_fonts: ^6.2.1
+
+  # Backend / Auth / temps réel
+  supabase_flutter: ^2.5.6
+
+  # Gestion d'état — pattern MVVM (ViewModel = ChangeNotifier)
+  provider: ^6.1.2
+
+  # Chargement des variables d'environnement (secrets hors du code source)
+  flutter_dotenv: ^5.1.0
+
+  cupertino_icons: ^1.0.8
+  flutter_map: ^8.3.1
+  latlong2: ^0.10.1
+  url_launcher: ^6.3.2
+  font_awesome_flutter: 10.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
