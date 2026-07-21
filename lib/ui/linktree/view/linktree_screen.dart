@@ -28,7 +28,7 @@ class _LinktreeView extends StatelessWidget {
   const _LinktreeView();
 
   /// Associe une clé d'icône (stockée en base) à une icône FontAwesome.
-  static IconData _iconFor(String key) {
+  static FaIconData _iconFor(String key) {
     switch (key) {
       case 'spotify':
         return FontAwesomeIcons.spotify;
@@ -164,7 +164,7 @@ class _FallbackAvatar extends StatelessWidget {
 
 class _LinkButton extends StatelessWidget {
   final SocialLink link;
-  final IconData icon;
+  final FaIconData icon;
   final VoidCallback onTap;
 
   const _LinkButton({
