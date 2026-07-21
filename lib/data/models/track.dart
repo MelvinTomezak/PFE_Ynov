@@ -5,6 +5,9 @@ class Track {
   final String? album;
   final String? coverUrl;
   final int? durationSeconds;
+  final int likeCount;
+  final int commentCount;
+  final bool isLiked;
 
   const Track({
     required this.id,
@@ -12,6 +15,9 @@ class Track {
     this.album,
     this.coverUrl,
     this.durationSeconds,
+    this.likeCount = 0,
+    this.commentCount = 0,
+    this.isLiked = false,
   });
 
   factory Track.fromMap(Map<String, dynamic> map) {
@@ -21,6 +27,19 @@ class Track {
       album: map['album'] as String?,
       coverUrl: map['cover_url'] as String?,
       durationSeconds: map['duration_seconds'] as int?,
+    );
+  }
+
+  Track copyWith({int? likeCount, int? commentCount, bool? isLiked}) {
+    return Track(
+      id: id,
+      title: title,
+      album: album,
+      coverUrl: coverUrl,
+      durationSeconds: durationSeconds,
+      likeCount: likeCount ?? this.likeCount,
+      commentCount: commentCount ?? this.commentCount,
+      isLiked: isLiked ?? this.isLiked,
     );
   }
 

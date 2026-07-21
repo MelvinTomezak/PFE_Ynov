@@ -44,6 +44,27 @@ create table if not exists public.votes (
   primary key (user_id)
 );
 
+-- Likes : un seul like par utilisateur et par morceau
+create table if not exists public.track_likes (
+  track_id   uuid not null references public.tracks(id) on delete cascade,
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (track_id, user_id)
+);
+
+-- Commentaires laissés sur les morceaux
+create table if not exists public.track_comments (
+  id         uuid primary key default gen_random_uuid(),
+  track_id   uuid not null references public.tracks(id) on delete cascade,
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  username   text not null check (char_length(username) between 2 and 20),
+  content    text not null check (char_length(btrim(content)) between 1 and 500),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists track_comments_track_created_idx
+  on public.track_comments (track_id, created_at desc);
+
 -- Urgences (bouton d'urgence)
 create table if not exists public.emergencies (
   id         uuid primary key default gen_random_uuid(),
@@ -61,6 +82,8 @@ alter table public.artist      enable row level security;
 alter table public.tracks      enable row level security;
 alter table public.events      enable row level security;
 alter table public.votes       enable row level security;
+alter table public.track_likes enable row level security;
+alter table public.track_comments enable row level security;
 alter table public.emergencies enable row level security;
 
 -- Contenu public : lecture seule pour tout utilisateur authentifié
@@ -73,6 +96,22 @@ create policy "Lecture votes"    on public.votes for select to authenticated usi
 create policy "Inserer son vote" on public.votes for insert to authenticated with check (auth.uid() = user_id);
 create policy "Modifier son vote" on public.votes for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "Supprimer son vote" on public.votes for delete to authenticated using (auth.uid() = user_id);
+
+-- Likes : tout le monde peut les compter, chacun gère uniquement le sien
+create policy "Lecture likes" on public.track_likes
+  for select to authenticated using (true);
+create policy "Ajouter son like" on public.track_likes
+  for insert to authenticated with check (auth.uid() = user_id);
+create policy "Supprimer son like" on public.track_likes
+  for delete to authenticated using (auth.uid() = user_id);
+
+-- Commentaires : lecture commune, création et suppression personnelles
+create policy "Lecture commentaires" on public.track_comments
+  for select to authenticated using (true);
+create policy "Ajouter son commentaire" on public.track_comments
+  for insert to authenticated with check (auth.uid() = user_id);
+create policy "Supprimer son commentaire" on public.track_comments
+  for delete to authenticated using (auth.uid() = user_id);
 
 -- Urgences : chacun ne crée et ne lit QUE ses propres alertes
 create policy "Inserer une urgence" on public.emergencies for insert to authenticated with check (auth.uid() = user_id);
