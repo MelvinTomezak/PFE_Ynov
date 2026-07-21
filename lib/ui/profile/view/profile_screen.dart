@@ -27,53 +27,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _editUsername() async {
-    final controller = TextEditingController(text: _username);
-    final formKey = GlobalKey<FormState>();
-    final result = await showDialog<String>(
+    final result = await showModalBottomSheet<String>(
       context: context,
-      builder: (ctx) {
-        void save() {
-          if (formKey.currentState!.validate()) {
-            Navigator.pop(ctx, controller.text.trim());
-          }
-        }
-
-        return AlertDialog(
-          backgroundColor: AppColors.surfaceAlt,
-          title: const Text('Modifier le pseudonyme'),
-          content: Form(
-            key: formKey,
-            child: TextFormField(
-              controller: controller,
-              autofocus: true,
-              maxLength: 20,
-              textInputAction: TextInputAction.done,
-              autofillHints: const [AutofillHints.username],
-              onFieldSubmitted: (_) => save(),
-              decoration: const InputDecoration(
-                labelText: 'Pseudonyme',
-                hintText: 'Comment doit-on t’appeler ?',
-                helperText: 'Entre 2 et 20 caractères',
-                prefixIcon: Icon(Icons.alternate_email),
-                counterText: '',
-              ),
-              validator: Validators.username,
-            ),
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Annuler')),
-            TextButton(onPressed: save, child: const Text('Enregistrer')),
-          ],
-        );
-      },
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _UsernameEditorSheet(initialUsername: _username),
     );
-    controller.dispose();
 
     if (result != null && result.isNotEmpty && result != _username) {
-      await _authRepo.updateUsername(result);
-      if (mounted) setState(() => _username = result);
+      try {
+        await _authRepo.updateUsername(result);
+        if (!mounted) return;
+        setState(() => _username = result);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pseudonyme mis à jour.')),
+        );
+      } catch (_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Impossible de modifier le pseudonyme.'),
+          ),
+        );
+      }
     }
   }
 
@@ -223,6 +200,156 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onTap: _confirmDelete,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _UsernameEditorSheet extends StatefulWidget {
+  final String initialUsername;
+
+  const _UsernameEditorSheet({required this.initialUsername});
+
+  @override
+  State<_UsernameEditorSheet> createState() => _UsernameEditorSheetState();
+}
+
+class _UsernameEditorSheetState extends State<_UsernameEditorSheet> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialUsername);
+    _controller.selection = TextSelection.collapsed(
+      offset: _controller.text.length,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_formKey.currentState!.validate()) {
+      Navigator.of(context).pop(_controller.text.trim());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
+
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      padding: EdgeInsets.only(bottom: keyboardHeight),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: Material(
+            color: AppColors.background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            clipBehavior: Clip.antiAlias,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.textMuted,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Ton pseudonyme',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Fermer',
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(
+                            Icons.close,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Text(
+                      'C’est le nom visible sur ton profil et tes commentaires.',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _controller,
+                        builder: (_, value, __) {
+                          final name = value.text.trim();
+                          return Container(
+                            width: 72,
+                            height: 72,
+                            alignment: Alignment.center,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: AppColors.neonGradient,
+                            ),
+                            child: Text(
+                              name.isEmpty ? '?' : name[0].toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: _controller,
+                      autofocus: true,
+                      maxLength: 20,
+                      textInputAction: TextInputAction.done,
+                      autofillHints: const [AutofillHints.username],
+                      onFieldSubmitted: (_) => _save(),
+                      decoration: const InputDecoration(
+                        labelText: 'Pseudonyme',
+                        hintText: 'Comment doit-on t’appeler ?',
+                        prefixIcon: Icon(Icons.alternate_email),
+                      ),
+                      validator: Validators.username,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: _save,
+                      icon: const Icon(Icons.check),
+                      label: const Text('Enregistrer le pseudonyme'),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
