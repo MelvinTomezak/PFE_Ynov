@@ -1,7 +1,5 @@
 name: CI
 
-# Intégration continue : à chaque push et pull request, le code est
-# récupéré, analysé statiquement, puis les tests unitaires sont exécutés.
 on:
   push:
     branches: [master, main]
@@ -23,6 +21,11 @@ jobs:
 
       - name: Installation des dépendances
         run: flutter pub get
+
+      - name: Création d'un .env pour la CI
+        run: |
+          echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
+          echo "SUPABASE_ANON_KEY=placeholder" >> .env
 
       - name: Analyse statique
         run: flutter analyze
