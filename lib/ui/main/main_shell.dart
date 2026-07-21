@@ -8,6 +8,7 @@ import '../home/view/home_screen.dart';
 import '../linktree/view/linktree_screen.dart';
 import '../music/view/music_screen.dart';
 import '../profile/view/profile_screen.dart';
+import '../shop/view/shop_screen.dart';
 import '../vote/view/vote_screen.dart';
 
 /// Coquille principale : barre supérieure (logo + profil) et navbar néon.
@@ -50,6 +51,10 @@ class _MainShellState extends State<MainShell> {
         icon: Icons.share_outlined,
         selectedIcon: Icons.share,
         label: 'Réseaux'),
+    NeonNavItem(
+        icon: Icons.storefront_outlined,
+        selectedIcon: Icons.storefront,
+        label: 'Boutique'),
   ];
 
   @override
@@ -60,6 +65,7 @@ class _MainShellState extends State<MainShell> {
       const VoteScreen(),
       const EventsScreen(),
       const LinktreeScreen(),
+      const ShopScreen(),
     ];
 
     return Scaffold(

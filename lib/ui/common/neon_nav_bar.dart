@@ -35,12 +35,12 @@ class NeonNavBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+          padding: const EdgeInsets.fromLTRB(8, 10, 8, 12),
           child: Row(
             children: List.generate(items.length, (i) {
               return Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
                   child: _NeonNavButton(
                     item: items[i],
                     selected: i == currentIndex,
@@ -80,13 +80,13 @@ class _NeonNavButton extends StatelessWidget {
       label: item.label,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 7),
           decoration: BoxDecoration(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: borderColor,
               width: selected ? 1.6 : 1.2,
@@ -107,7 +107,7 @@ class _NeonNavButton extends StatelessWidget {
               Icon(
                 selected ? item.selectedIcon : item.icon,
                 color: contentColor,
-                size: 22,
+                size: 21,
                 shadows: selected
                     ? [
                         Shadow(
@@ -123,7 +123,7 @@ class _NeonNavButton extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 9,
+                  fontSize: 8,
                   height: 1,
                   color: contentColor,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w400,

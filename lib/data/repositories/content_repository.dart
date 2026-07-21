@@ -3,11 +3,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/config/supabase_config.dart';
 import '../models/artist.dart';
 import '../models/concert_event.dart';
+import '../models/product.dart';
 import '../models/social_link.dart';
 import '../models/track.dart';
 
 /// Couche d'accès aux contenus (lecture seule) : biographie, morceaux,
-/// événements et liens sociaux. Isole Supabase du reste de l'application.
+/// événements, liens sociaux et produits de la boutique.
 class ContentRepository {
   final SupabaseClient _client;
 
@@ -38,6 +39,13 @@ class ContentRepository {
         await _client.from('social_links').select().order('sort_order');
     return (data as List)
         .map((e) => SocialLink.fromMap(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<Product>> fetchProducts() async {
+    final data = await _client.from('products').select().order('sort_order');
+    return (data as List)
+        .map((e) => Product.fromMap(e as Map<String, dynamic>))
         .toList();
   }
 }

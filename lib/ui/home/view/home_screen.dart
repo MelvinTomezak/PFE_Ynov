@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/load_status.dart';
+import '../../../data/repositories/auth_repository.dart';
 import '../../artist/view/artist_screen.dart';
 import '../../common/error_state.dart';
 import '../../common/neon_text.dart';
@@ -11,7 +12,7 @@ import '../viewmodel/home_viewmodel.dart';
 
 /// Écran « Accueil » : dernières actualités de STYMA.
 class HomeScreen extends StatelessWidget {
-  /// Permet de basculer vers un autre onglet (Musique = 1, Événements = 3, Liens = 4).
+  /// Bascule vers un autre onglet (Musique = 1, Événement = 3, Réseaux = 4).
   final ValueChanged<int> onSelectTab;
 
   const HomeScreen({super.key, required this.onSelectTab});
@@ -32,6 +33,7 @@ class _HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<HomeViewModel>();
+    final username = AuthRepository().username ?? 'toi';
 
     switch (vm.status) {
       case LoadStatus.loading:
@@ -46,17 +48,16 @@ class _HomeView extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
           children: [
-            const SectionLabel('Bienvenue sur'),
+            const SectionLabel('Ravi de te revoir'),
             const SizedBox(height: 8),
-            const NeonText('STYMA', fontSize: 40, glow: 20),
+            NeonText(username, fontSize: 34, glow: 18),
             const SizedBox(height: 28),
 
-            // Prochain événement
             if (vm.nextEvent != null) ...[
               const SectionLabel('Prochain concert'),
               const SizedBox(height: 10),
               _NewsCard(
-                icon: Icons.event,
+                icon: Icons.local_activity,
                 title: vm.nextEvent!.title,
                 subtitle:
                     '${vm.nextEvent!.venue} — ${vm.nextEvent!.city}\n${vm.nextEvent!.formattedDate}',
@@ -65,7 +66,6 @@ class _HomeView extends StatelessWidget {
               const SizedBox(height: 24),
             ],
 
-            // Derniers sons
             const SectionLabel('Derniers sons'),
             const SizedBox(height: 10),
             ...vm.latestTracks.map(
@@ -79,7 +79,6 @@ class _HomeView extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Accès rapides
             const SectionLabel('Découvrir'),
             const SizedBox(height: 10),
             Row(
@@ -89,16 +88,15 @@ class _HomeView extends StatelessWidget {
                     icon: Icons.person,
                     label: 'Biographie',
                     onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const ArtistScreen()),
+                      MaterialPageRoute(builder: (_) => const ArtistScreen()),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _QuickLink(
-                    icon: Icons.link,
-                    label: 'Tous les liens',
+                    icon: Icons.share,
+                    label: 'Réseaux',
                     onTap: () => onSelectTab(4),
                   ),
                 ),
