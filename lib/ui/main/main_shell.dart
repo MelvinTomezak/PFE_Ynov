@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/repositories/auth_repository.dart';
-import '../artist/view/artist_screen.dart';
 import '../common/neon_nav_bar.dart';
 import '../events/view/events_screen.dart';
 import '../home/view/home_screen.dart';

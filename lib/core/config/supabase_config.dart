@@ -19,7 +19,7 @@ class SupabaseConfig {
       );
     }
 
-    await Supabase.initialize(url: url, anonKey: anonKey);
+    await Supabase.initialize(url: url, publishableKey: anonKey);
   }
 
   /// Accès rapide au client Supabase depuis le reste de l'application.

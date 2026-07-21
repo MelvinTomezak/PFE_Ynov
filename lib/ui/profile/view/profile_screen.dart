@@ -84,6 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (confirmed != true) return;
+    if (!mounted) return;
 
     final auth = context.read<AuthViewModel>();
     final navigator = Navigator.of(context);
