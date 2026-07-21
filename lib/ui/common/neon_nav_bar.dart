@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -15,8 +14,8 @@ class NeonNavItem {
   });
 }
 
-/// Barre de navigation flottante : cadre transparent à contour bleu néon.
-/// L'onglet actif s'illumine (icône + label + halo).
+/// Barre de navigation sur fond noir : chaque bouton est délimité par un
+/// contour néon bleu clair. L'onglet actif s'illumine (contour + halo).
 class NeonNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -31,39 +30,25 @@ class NeonNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              height: 66,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.03),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: AppColors.border, width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.18),
-                    blurRadius: 24,
-                    spreadRadius: -4,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: List.generate(items.length, (i) {
-                  return _NeonNavButton(
+    return Container(
+      color: AppColors.background,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+          child: Row(
+            children: List.generate(items.length, (i) {
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: _NeonNavButton(
                     item: items[i],
                     selected: i == currentIndex,
                     onTap: () => onTap(i),
-                  );
-                }),
-              ),
-            ),
+                  ),
+                ),
+              );
+            }),
           ),
         ),
       ),
@@ -84,45 +69,64 @@ class _NeonNavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primary : AppColors.textMuted;
+    final borderColor = selected
+        ? AppColors.primary
+        : AppColors.primaryLight.withValues(alpha: 0.35);
+    final contentColor = selected ? AppColors.primary : AppColors.textMuted;
 
-    return Expanded(
-      child: Semantics(
-        button: true,
-        selected: selected,
-        label: item.label,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: item.label,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: borderColor,
+              width: selected ? 1.6 : 1.2,
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                      blurRadius: 14,
+                      spreadRadius: -2,
+                    ),
+                  ]
+                : null,
+          ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 selected ? item.selectedIcon : item.icon,
-                color: color,
-                size: 24,
+                color: contentColor,
+                size: 22,
                 shadows: selected
                     ? [
                         Shadow(
                           color: AppColors.primary.withValues(alpha: 0.9),
-                          blurRadius: 14,
+                          blurRadius: 12,
                         ),
                       ]
                     : null,
               ),
               const SizedBox(height: 3),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 180),
+              Text(
+                item.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 9,
                   height: 1,
+                  color: contentColor,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  color: color,
-                ),
-                child: Text(
-                  item.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

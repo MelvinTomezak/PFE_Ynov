@@ -35,21 +35,21 @@ class _MainShellState extends State<MainShell> {
     NeonNavItem(
         icon: Icons.home_outlined, selectedIcon: Icons.home, label: 'Accueil'),
     NeonNavItem(
-        icon: Icons.library_music_outlined,
-        selectedIcon: Icons.library_music,
+        icon: Icons.headphones_outlined,
+        selectedIcon: Icons.headphones,
         label: 'Musique'),
     NeonNavItem(
         icon: Icons.how_to_vote_outlined,
         selectedIcon: Icons.how_to_vote,
         label: 'Vote'),
     NeonNavItem(
-        icon: Icons.calendar_month_outlined,
-        selectedIcon: Icons.calendar_month,
-        label: 'Agenda'),
+        icon: Icons.local_activity_outlined,
+        selectedIcon: Icons.local_activity,
+        label: 'Événement'),
     NeonNavItem(
-        icon: Icons.link_outlined,
-        selectedIcon: Icons.link,
-        label: 'Linktree'),
+        icon: Icons.share_outlined,
+        selectedIcon: Icons.share,
+        label: 'Réseaux'),
   ];
 
   @override
