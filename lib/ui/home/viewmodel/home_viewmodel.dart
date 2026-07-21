@@ -7,9 +7,9 @@ import '../../../data/repositories/content_repository.dart';
 
 /// ViewModel de l'accueil : rassemble les dernières actualités.
 class HomeViewModel extends ChangeNotifier {
-  final ContentRepository _repository;
+  final ContentDataSource _repository;
 
-  HomeViewModel({ContentRepository? repository})
+  HomeViewModel({ContentDataSource? repository})
       : _repository = repository ?? ContentRepository();
 
   LoadStatus status = LoadStatus.idle;

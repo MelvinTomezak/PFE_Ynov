@@ -5,9 +5,9 @@ import '../../../data/models/artist.dart';
 import '../../../data/repositories/content_repository.dart';
 
 class ArtistViewModel extends ChangeNotifier {
-  final ContentRepository _repository;
+  final ContentDataSource _repository;
 
-  ArtistViewModel({ContentRepository? repository})
+  ArtistViewModel({ContentDataSource? repository})
       : _repository = repository ?? ContentRepository();
 
   LoadStatus status = LoadStatus.idle;

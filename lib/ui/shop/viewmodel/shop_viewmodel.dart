@@ -5,9 +5,9 @@ import '../../../data/models/product.dart';
 import '../../../data/repositories/content_repository.dart';
 
 class ShopViewModel extends ChangeNotifier {
-  final ContentRepository _repository;
+  final ContentDataSource _repository;
 
-  ShopViewModel({ContentRepository? repository})
+  ShopViewModel({ContentDataSource? repository})
       : _repository = repository ?? ContentRepository();
 
   LoadStatus status = LoadStatus.idle;

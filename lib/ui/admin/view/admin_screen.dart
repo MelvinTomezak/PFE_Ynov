@@ -11,8 +11,9 @@ enum _ContentType { track, event, product }
 /// Tableau de bord visible uniquement pour les comptes administrateurs.
 class AdminScreen extends StatefulWidget {
   final VoidCallback? onContentChanged;
+  final AdminDataSource? repository;
 
-  const AdminScreen({super.key, this.onContentChanged});
+  const AdminScreen({super.key, this.onContentChanged, this.repository});
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -20,13 +21,14 @@ class AdminScreen extends StatefulWidget {
 
 class _AdminScreenState extends State<AdminScreen>
     with SingleTickerProviderStateMixin {
-  final _repository = AdminRepository();
+  late final AdminDataSource _repository;
   late final TabController _tabs;
   int _revision = 0;
 
   @override
   void initState() {
     super.initState();
+    _repository = widget.repository ?? AdminRepository();
     _tabs = TabController(length: 3, vsync: this)..addListener(_refresh);
   }
 
@@ -129,7 +131,7 @@ class _AdminScreenState extends State<AdminScreen>
             children: [
               _AdminList<Track>(
                 key: ValueKey('tracks-$_revision'),
-                future: _repository.fetchTracks(),
+                loader: _repository.fetchTracks,
                 title: (item) => item.title,
                 subtitle: (item) => item.album ?? 'Sans album',
                 onEdit: _openForm,
@@ -137,7 +139,7 @@ class _AdminScreenState extends State<AdminScreen>
               ),
               _AdminList<ConcertEvent>(
                 key: ValueKey('events-$_revision'),
-                future: _repository.fetchEvents(),
+                loader: _repository.fetchEvents,
                 title: (item) => item.title,
                 subtitle: (item) => '${item.venue} — ${item.formattedDate}',
                 onEdit: _openForm,
@@ -145,7 +147,7 @@ class _AdminScreenState extends State<AdminScreen>
               ),
               _AdminList<Product>(
                 key: ValueKey('products-$_revision'),
-                future: _repository.fetchProducts(),
+                loader: _repository.fetchProducts,
                 title: (item) => item.name,
                 subtitle: (item) =>
                     '${item.formattedPrice} · ${item.category ?? 'Sans catégorie'}',
@@ -177,8 +179,8 @@ class _AdminScreenState extends State<AdminScreen>
   }
 }
 
-class _AdminList<T> extends StatelessWidget {
-  final Future<List<T>> future;
+class _AdminList<T> extends StatefulWidget {
+  final Future<List<T>> Function() loader;
   final String Function(T) title;
   final String Function(T) subtitle;
   final ValueChanged<T> onEdit;
@@ -186,7 +188,7 @@ class _AdminList<T> extends StatelessWidget {
 
   const _AdminList({
     super.key,
-    required this.future,
+    required this.loader,
     required this.title,
     required this.subtitle,
     required this.onEdit,
@@ -194,9 +196,22 @@ class _AdminList<T> extends StatelessWidget {
   });
 
   @override
+  State<_AdminList<T>> createState() => _AdminListState<T>();
+}
+
+class _AdminListState<T> extends State<_AdminList<T>> {
+  late final Future<List<T>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = widget.loader();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<T>>(
-      future: future,
+      future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -221,20 +236,20 @@ class _AdminList<T> extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
               ),
               child: ListTile(
-                title: Text(title(item)),
-                subtitle: Text(subtitle(item)),
+                title: Text(widget.title(item)),
+                subtitle: Text(widget.subtitle(item)),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
                       tooltip: 'Modifier',
-                      onPressed: () => onEdit(item),
+                      onPressed: () => widget.onEdit(item),
                       icon: const Icon(Icons.edit_outlined,
                           color: AppColors.primary),
                     ),
                     IconButton(
                       tooltip: 'Supprimer',
-                      onPressed: () => onDelete(item),
+                      onPressed: () => widget.onDelete(item),
                       icon: const Icon(Icons.delete_outline,
                           color: AppColors.danger),
                     ),
@@ -252,7 +267,7 @@ class _AdminList<T> extends StatelessWidget {
 class _AdminEditSheet extends StatefulWidget {
   final _ContentType type;
   final Object? item;
-  final AdminRepository repository;
+  final AdminDataSource repository;
 
   const _AdminEditSheet({
     required this.type,
@@ -308,6 +323,14 @@ class _AdminEditSheetState extends State<_AdminEditSheet> {
 
   String? _required(String? value) =>
       (value?.trim().isEmpty ?? true) ? 'Ce champ est requis.' : null;
+
+  String? _number(String? value, {required bool required}) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return required ? 'Ce champ est requis.' : null;
+    return double.tryParse(text.replaceAll(',', '.')) == null
+        ? 'Saisissez un nombre valide.'
+        : null;
+  }
 
   Future<void> _pickDate() async {
     final initial = _startsAt ?? DateTime.now().add(const Duration(days: 1));
@@ -442,8 +465,14 @@ class _AdminEditSheetState extends State<_AdminEditSheet> {
   }
 
   List<Widget> _buildFields() {
-    Widget input(String key, String label,
-        {bool required = false, TextInputType? keyboard, int maxLines = 1}) {
+    Widget input(
+      String key,
+      String label, {
+      bool required = false,
+      TextInputType? keyboard,
+      int maxLines = 1,
+      String? Function(String?)? validator,
+    }) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 14),
         child: TextFormField(
@@ -451,7 +480,7 @@ class _AdminEditSheetState extends State<_AdminEditSheet> {
           keyboardType: keyboard,
           maxLines: maxLines,
           decoration: InputDecoration(labelText: label),
-          validator: required ? _required : null,
+          validator: validator ?? (required ? _required : null),
         ),
       );
     }
@@ -462,7 +491,8 @@ class _AdminEditSheetState extends State<_AdminEditSheet> {
           input('title', 'Titre', required: true),
           input('album', 'Album'),
           input('duration', 'Durée en secondes',
-              keyboard: TextInputType.number),
+              keyboard: TextInputType.number,
+              validator: (value) => _number(value, required: false)),
           input('cover', 'URL de la pochette', keyboard: TextInputType.url),
         ];
       case _ContentType.event:
@@ -482,10 +512,12 @@ class _AdminEditSheetState extends State<_AdminEditSheet> {
           const SizedBox(height: 14),
           input('latitude', 'Latitude',
               keyboard: const TextInputType.numberWithOptions(
-                  decimal: true, signed: true)),
+                  decimal: true, signed: true),
+              validator: (value) => _number(value, required: false)),
           input('longitude', 'Longitude',
               keyboard: const TextInputType.numberWithOptions(
-                  decimal: true, signed: true)),
+                  decimal: true, signed: true),
+              validator: (value) => _number(value, required: false)),
         ];
       case _ContentType.product:
         return [
@@ -493,7 +525,8 @@ class _AdminEditSheetState extends State<_AdminEditSheet> {
           input('category', 'Catégorie'),
           input('price', 'Prix en euros',
               required: true,
-              keyboard: const TextInputType.numberWithOptions(decimal: true)),
+              keyboard: const TextInputType.numberWithOptions(decimal: true),
+              validator: (value) => _number(value, required: true)),
           input('image', 'URL de l’image', keyboard: TextInputType.url),
           input('description', 'Description', maxLines: 4),
         ];

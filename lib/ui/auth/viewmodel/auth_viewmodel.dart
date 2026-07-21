@@ -6,9 +6,9 @@ import '../../../data/repositories/auth_repository.dart';
 enum AuthStatus { idle, loading, error }
 
 class AuthViewModel extends ChangeNotifier {
-  final AuthRepository _repository;
+  final AuthDataSource _repository;
 
-  AuthViewModel({AuthRepository? repository})
+  AuthViewModel({AuthDataSource? repository})
       : _repository = repository ?? AuthRepository();
 
   AuthStatus _status = AuthStatus.idle;

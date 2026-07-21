@@ -2,8 +2,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/config/supabase_config.dart';
 
+abstract interface class AuthDataSource {
+  Future<void> signUp({
+    required String email,
+    required String password,
+    required String username,
+  });
+  Future<void> signIn({required String email, required String password});
+  Future<void> signOut();
+  Future<void> deleteAccount();
+}
+
 /// Couche d'accès aux données pour l'authentification.
-class AuthRepository {
+class AuthRepository implements AuthDataSource {
   final SupabaseClient _client;
 
   AuthRepository({SupabaseClient? client})
@@ -30,6 +41,7 @@ class AuthRepository {
   }
 
   /// Inscription : le pseudonyme est enregistré dans les métadonnées.
+  @override
   Future<void> signUp({
     required String email,
     required String password,
@@ -42,6 +54,7 @@ class AuthRepository {
     );
   }
 
+  @override
   Future<void> signIn({required String email, required String password}) async {
     await _client.auth.signInWithPassword(
       email: email.trim(),
@@ -49,6 +62,7 @@ class AuthRepository {
     );
   }
 
+  @override
   Future<void> signOut() async {
     await _client.auth.signOut();
   }
@@ -62,6 +76,7 @@ class AuthRepository {
 
   /// Supprime définitivement le compte de l'utilisateur courant
   /// (via la fonction sécurisée `delete_account` côté base), puis déconnecte.
+  @override
   Future<void> deleteAccount() async {
     await _client.rpc('delete_account');
     await _client.auth.signOut();

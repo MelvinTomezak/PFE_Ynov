@@ -5,9 +5,9 @@ import '../../../data/models/social_link.dart';
 import '../../../data/repositories/content_repository.dart';
 
 class LinktreeViewModel extends ChangeNotifier {
-  final ContentRepository _repository;
+  final ContentDataSource _repository;
 
-  LinktreeViewModel({ContentRepository? repository})
+  LinktreeViewModel({ContentDataSource? repository})
       : _repository = repository ?? ContentRepository();
 
   LoadStatus status = LoadStatus.idle;

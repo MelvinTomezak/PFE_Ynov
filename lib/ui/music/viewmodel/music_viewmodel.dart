@@ -7,10 +7,13 @@ import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/music_repository.dart';
 
 class MusicViewModel extends ChangeNotifier {
-  final MusicRepository _repository;
+  final MusicDataSource _repository;
+  final String Function() _username;
 
-  MusicViewModel({MusicRepository? repository})
-      : _repository = repository ?? MusicRepository();
+  MusicViewModel({MusicDataSource? repository, String Function()? username})
+      : _repository = repository ?? MusicRepository(),
+        _username =
+            username ?? (() => AuthRepository().username ?? 'Utilisateur');
 
   LoadStatus status = LoadStatus.idle;
   List<Track> tracks = [];
@@ -34,9 +37,15 @@ class MusicViewModel extends ChangeNotifier {
     if (interactionInProgress) return false;
     interactionInProgress = true;
     final index = tracks.indexWhere((item) => item.id == track.id);
+    if (index == -1) {
+      interactionInProgress = false;
+      return false;
+    }
     final updated = track.copyWith(
       isLiked: !track.isLiked,
-      likeCount: track.likeCount + (track.isLiked ? -1 : 1),
+      likeCount: track.isLiked
+          ? (track.likeCount > 0 ? track.likeCount - 1 : 0)
+          : track.likeCount + 1,
     );
     tracks[index] = updated;
     notifyListeners();
@@ -62,9 +71,10 @@ class MusicViewModel extends ChangeNotifier {
       final comment = await _repository.addComment(
         trackId: track.id,
         content: content,
-        username: AuthRepository().username ?? 'Utilisateur',
+        username: _username(),
       );
       final index = tracks.indexWhere((item) => item.id == track.id);
+      if (index == -1) return null;
       tracks[index] = tracks[index].copyWith(
         commentCount: tracks[index].commentCount + 1,
       );

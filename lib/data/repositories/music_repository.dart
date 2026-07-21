@@ -5,8 +5,19 @@ import '../models/track.dart';
 import '../models/track_comment.dart';
 import 'content_repository.dart';
 
+abstract interface class MusicDataSource {
+  Future<List<Track>> fetchTracks();
+  Future<void> toggleLike(Track track);
+  Future<List<TrackComment>> fetchComments(String trackId);
+  Future<TrackComment> addComment({
+    required String trackId,
+    required String content,
+    required String username,
+  });
+}
+
 /// Accès aux morceaux et aux interactions sociales associées.
-class MusicRepository {
+class MusicRepository implements MusicDataSource {
   final SupabaseClient _client;
   final ContentRepository _contentRepository;
 
@@ -18,6 +29,7 @@ class MusicRepository {
 
   String get _userId => _client.auth.currentUser!.id;
 
+  @override
   Future<List<Track>> fetchTracks() async {
     final tracks = await _contentRepository.fetchTracks();
 
@@ -45,6 +57,7 @@ class MusicRepository {
     }
   }
 
+  @override
   Future<void> toggleLike(Track track) async {
     if (track.isLiked) {
       await _client
@@ -60,6 +73,7 @@ class MusicRepository {
     }
   }
 
+  @override
   Future<List<TrackComment>> fetchComments(String trackId) async {
     final data = await _client
         .from('track_comments')
@@ -71,6 +85,7 @@ class MusicRepository {
         .toList();
   }
 
+  @override
   Future<TrackComment> addComment({
     required String trackId,
     required String content,

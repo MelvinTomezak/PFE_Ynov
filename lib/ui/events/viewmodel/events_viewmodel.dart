@@ -5,9 +5,9 @@ import '../../../data/models/concert_event.dart';
 import '../../../data/repositories/content_repository.dart';
 
 class EventsViewModel extends ChangeNotifier {
-  final ContentRepository _repository;
+  final ContentDataSource _repository;
 
-  EventsViewModel({ContentRepository? repository})
+  EventsViewModel({ContentDataSource? repository})
       : _repository = repository ?? ContentRepository();
 
   LoadStatus status = LoadStatus.idle;

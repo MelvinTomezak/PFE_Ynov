@@ -6,8 +6,41 @@ import '../models/product.dart';
 import '../models/track.dart';
 import 'content_repository.dart';
 
+abstract interface class AdminDataSource {
+  Future<List<Track>> fetchTracks();
+  Future<List<ConcertEvent>> fetchEvents();
+  Future<List<Product>> fetchProducts();
+  Future<void> saveTrack({
+    String? id,
+    required String title,
+    String? album,
+    String? coverUrl,
+    int? durationSeconds,
+  });
+  Future<void> saveEvent({
+    String? id,
+    required String title,
+    required String venue,
+    required String city,
+    required DateTime startsAt,
+    double? latitude,
+    double? longitude,
+  });
+  Future<void> saveProduct({
+    String? id,
+    required String name,
+    String? category,
+    required double price,
+    String? imageUrl,
+    String? description,
+  });
+  Future<void> deleteTrack(String id);
+  Future<void> deleteEvent(String id);
+  Future<void> deleteProduct(String id);
+}
+
 /// Écritures réservées aux administrateurs par les politiques RLS Supabase.
-class AdminRepository {
+class AdminRepository implements AdminDataSource {
   final SupabaseClient _client;
   final ContentRepository _content;
 
@@ -15,10 +48,14 @@ class AdminRepository {
       : _client = client ?? SupabaseConfig.client,
         _content = ContentRepository(client: client ?? SupabaseConfig.client);
 
+  @override
   Future<List<Track>> fetchTracks() => _content.fetchTracks();
+  @override
   Future<List<ConcertEvent>> fetchEvents() => _content.fetchEvents();
+  @override
   Future<List<Product>> fetchProducts() => _content.fetchProducts();
 
+  @override
   Future<void> saveTrack({
     String? id,
     required String title,
@@ -39,6 +76,7 @@ class AdminRepository {
     }
   }
 
+  @override
   Future<void> saveEvent({
     String? id,
     required String title,
@@ -63,6 +101,7 @@ class AdminRepository {
     }
   }
 
+  @override
   Future<void> saveProduct({
     String? id,
     required String name,
@@ -85,10 +124,13 @@ class AdminRepository {
     }
   }
 
+  @override
   Future<void> deleteTrack(String id) =>
       _client.from('tracks').delete().eq('id', id);
+  @override
   Future<void> deleteEvent(String id) =>
       _client.from('events').delete().eq('id', id);
+  @override
   Future<void> deleteProduct(String id) =>
       _client.from('products').delete().eq('id', id);
 
