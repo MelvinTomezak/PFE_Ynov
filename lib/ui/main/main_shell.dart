@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../common/neon_nav_bar.dart';
+import '../admin/view/admin_screen.dart';
 import '../events/view/events_screen.dart';
 import '../home/view/home_screen.dart';
 import '../linktree/view/linktree_screen.dart';
@@ -21,6 +22,23 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _index = 0;
+  bool _isAdmin = false;
+  int _contentRevision = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRole();
+  }
+
+  Future<void> _loadRole() async {
+    try {
+      final isAdmin = await AuthRepository().isAdmin();
+      if (mounted) setState(() => _isAdmin = isAdmin);
+    } catch (_) {
+      // Une absence de table/migration conserve l'expérience utilisateur.
+    }
+  }
 
   void _selectTab(int i) => setState(() => _index = i);
 
@@ -32,7 +50,7 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
-  static const _navItems = [
+  static const _userNavItems = [
     NeonNavItem(
         icon: Icons.home_outlined, selectedIcon: Icons.home, label: 'Accueil'),
     NeonNavItem(
@@ -57,16 +75,30 @@ class _MainShellState extends State<MainShell> {
         label: 'Boutique'),
   ];
 
+  static const _adminItem = NeonNavItem(
+    icon: Icons.admin_panel_settings_outlined,
+    selectedIcon: Icons.admin_panel_settings,
+    label: 'Admin',
+  );
+
   @override
   Widget build(BuildContext context) {
     final screens = [
-      HomeScreen(onSelectTab: _selectTab),
-      const MusicScreen(),
+      HomeScreen(
+        key: ValueKey('home-$_contentRevision'),
+        onSelectTab: _selectTab,
+      ),
+      MusicScreen(key: ValueKey('music-$_contentRevision')),
       const VoteScreen(),
-      const EventsScreen(),
+      EventsScreen(key: ValueKey('events-$_contentRevision')),
       const LinktreeScreen(),
-      const ShopScreen(),
+      ShopScreen(key: ValueKey('shop-$_contentRevision')),
+      if (_isAdmin)
+        AdminScreen(
+          onContentChanged: () => setState(() => _contentRevision++),
+        ),
     ];
+    final navItems = [..._userNavItems, if (_isAdmin) _adminItem];
 
     return Scaffold(
       extendBody: true,
@@ -92,7 +124,7 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: NeonNavBar(
         currentIndex: _index,
         onTap: _selectTab,
-        items: _navItems,
+        items: navItems,
       ),
     );
   }

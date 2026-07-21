@@ -17,6 +17,18 @@ class AuthRepository {
   String? get username =>
       _client.auth.currentUser?.userMetadata?['username'] as String?;
 
+  /// Le rôle est lu en base : il ne peut pas être modifié par l'utilisateur.
+  Future<bool> isAdmin() async {
+    final user = currentUser;
+    if (user == null) return false;
+    final data = await _client
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle();
+    return data?['role'] == 'admin';
+  }
+
   /// Inscription : le pseudonyme est enregistré dans les métadonnées.
   Future<void> signUp({
     required String email,
