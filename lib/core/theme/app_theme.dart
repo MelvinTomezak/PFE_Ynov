@@ -21,6 +21,11 @@ class AppTheme {
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: colorScheme,
+      // L'interface reste stable au toucher, sans vague ni surbrillance
+      // persistante sur le dernier élément sélectionné.
+      splashFactory: NoSplash.splashFactory,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
       textTheme: _textTheme(base.textTheme),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -67,14 +72,17 @@ class AppTheme {
           shadowColor: AppColors.primary,
           elevation: 12,
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle:
+              GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(foregroundColor: AppColors.primaryLight),
       ),
-      dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1),
+      dividerTheme:
+          const DividerThemeData(color: AppColors.border, thickness: 1),
       progressIndicatorTheme:
           const ProgressIndicatorThemeData(color: AppColors.primary),
       snackBarTheme: const SnackBarThemeData(
@@ -87,11 +95,17 @@ class AppTheme {
   static TextTheme _textTheme(TextTheme base) {
     return base.copyWith(
       headlineMedium: GoogleFonts.unbounded(
-          fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+          fontSize: 26,
+          fontWeight: FontWeight.w800,
+          color: AppColors.textPrimary),
       titleLarge: GoogleFonts.unbounded(
-          fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary),
       titleMedium: GoogleFonts.unbounded(
-          fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary),
       bodyLarge: GoogleFonts.inter(
           fontSize: 15, color: AppColors.textPrimary, height: 1.5),
       bodyMedium: GoogleFonts.inter(

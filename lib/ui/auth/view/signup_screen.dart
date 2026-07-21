@@ -28,14 +28,6 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  String? _validateUsername(String? value) {
-    final input = value?.trim() ?? '';
-    if (input.isEmpty) return 'Le pseudonyme est requis.';
-    if (input.length < 2) return 'Le pseudonyme est trop court.';
-    if (input.length > 20) return 'Le pseudonyme est trop long (20 max).';
-    return null;
-  }
-
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -67,7 +59,13 @@ class _SignupScreenState extends State<SignupScreen> {
     final viewModel = context.watch<AuthViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Inscription')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: const Text('STYMA'),
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -81,8 +79,16 @@ class _SignupScreenState extends State<SignupScreen> {
                   TextFormField(
                     controller: _usernameController,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Pseudonyme'),
-                    validator: _validateUsername,
+                    maxLength: 20,
+                    autofillHints: const [AutofillHints.username],
+                    decoration: const InputDecoration(
+                      labelText: 'Pseudonyme',
+                      hintText: 'Comment doit-on t’appeler ?',
+                      helperText: 'Entre 2 et 20 caractères',
+                      prefixIcon: Icon(Icons.alternate_email),
+                      counterText: '',
+                    ),
+                    validator: Validators.username,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

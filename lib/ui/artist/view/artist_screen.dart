@@ -54,7 +54,8 @@ class _ArtistView extends StatelessWidget {
               decoration: const BoxDecoration(gradient: AppColors.neonGradient),
               alignment: Alignment.bottomLeft,
               padding: const EdgeInsets.all(20),
-              child: const Icon(Icons.graphic_eq, size: 56, color: Colors.white),
+              child:
+                  const Icon(Icons.graphic_eq, size: 56, color: Colors.white),
             ),
             Padding(
               padding: const EdgeInsets.all(24),
@@ -92,7 +93,16 @@ class _ArtistView extends StatelessWidget {
     // Depuis l'accueil, l'écran est empilé (avec AppBar retour).
     // En onglet direct, pas d'AppBar (le logo STYMA reste en haut).
     if (showAppBar) {
-      return Scaffold(appBar: AppBar(title: const Text('Biographie')), body: body);
+      return Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: const Text('STYMA'),
+          ),
+        ),
+        body: body,
+      );
     }
     return body;
   }

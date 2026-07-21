@@ -14,6 +14,15 @@ class Validators {
     r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$",
   );
 
+  /// Valide un pseudonyme affichable dans l'application.
+  static String? username(String? value) {
+    final input = value?.trim() ?? '';
+    if (input.isEmpty) return 'Le pseudonyme est requis.';
+    if (input.length < 2) return 'Utilisez au moins 2 caractères.';
+    if (input.length > 20) return 'Utilisez 20 caractères maximum.';
+    return null;
+  }
+
   /// Valide une adresse e-mail.
   static String? email(String? value) {
     final input = value?.trim() ?? '';

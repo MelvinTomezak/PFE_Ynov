@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/validators.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../common/section_label.dart';
@@ -27,25 +28,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _editUsername() async {
     final controller = TextEditingController(text: _username);
+    final formKey = GlobalKey<FormState>();
     final result = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceAlt,
-        title: const Text('Modifier le pseudonyme'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(labelText: 'Pseudonyme'),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-              child: const Text('Enregistrer')),
-        ],
-      ),
+      builder: (ctx) {
+        void save() {
+          if (formKey.currentState!.validate()) {
+            Navigator.pop(ctx, controller.text.trim());
+          }
+        }
+
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceAlt,
+          title: const Text('Modifier le pseudonyme'),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: controller,
+              autofocus: true,
+              maxLength: 20,
+              textInputAction: TextInputAction.done,
+              autofillHints: const [AutofillHints.username],
+              onFieldSubmitted: (_) => save(),
+              decoration: const InputDecoration(
+                labelText: 'Pseudonyme',
+                hintText: 'Comment doit-on t’appeler ?',
+                helperText: 'Entre 2 et 20 caractères',
+                prefixIcon: Icon(Icons.alternate_email),
+                counterText: '',
+              ),
+              validator: Validators.username,
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Annuler')),
+            TextButton(onPressed: save, child: const Text('Enregistrer')),
+          ],
+        );
+      },
     );
+    controller.dispose();
 
     if (result != null && result.isNotEmpty && result != _username) {
       await _authRepo.updateUsername(result);
@@ -105,7 +129,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final initial = _username.isNotEmpty ? _username[0].toUpperCase() : '?';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: const Text('STYMA'),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -127,8 +157,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           color: Colors.white)),
                 ),
                 const SizedBox(height: 16),
-                Text(_username,
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(_username, style: Theme.of(context).textTheme.titleLarge),
                 if (email.isNotEmpty)
                   Text(email,
                       style: const TextStyle(
@@ -137,7 +166,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 36),
-
           const SectionLabel('Compte'),
           const SizedBox(height: 12),
           _SettingTile(
@@ -156,7 +184,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             onTap: _editUsername,
           ),
-
           const SizedBox(height: 28),
           const SectionLabel('Préférences'),
           const SizedBox(height: 12),
@@ -181,7 +208,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               applicationLegalese: '© 2026 STYMA',
             ),
           ),
-
           const SizedBox(height: 36),
           _SettingTile(
             icon: Icons.logout,
