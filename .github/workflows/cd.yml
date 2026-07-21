@@ -1,0 +1,62 @@
+name: CD
+
+# Déploiement continu : à chaque push sur master, l'application web est
+# construite puis publiée sur GitHub Pages.
+on:
+  push:
+    branches: [master]
+
+# Droits nécessaires au déploiement GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement à la fois.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Installation des dépendances
+        run: flutter pub get
+
+      # Recrée le fichier .env à partir des secrets GitHub
+      # (les clés ne sont jamais commitées dans le dépôt).
+      - name: Création du fichier .env
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+
+      # base-href = nom du dépôt (le site est servi sous /PFE_Ynov/).
+      - name: Build de l'application web
+        run: flutter build web --release --base-href /PFE_Ynov/
+
+      - name: Préparation de l'artefact Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    name: Déploiement GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publication
+        id: deployment
+        uses: actions/deploy-pages@v4
