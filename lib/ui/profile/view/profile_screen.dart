@@ -105,99 +105,299 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final email = _authRepo.currentUser?.email ?? '';
     final initial = _username.isNotEmpty ? _username[0].toUpperCase() : '?';
 
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: const Text('STYMA'),
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: const Text('STYMA'),
+          ),
+          bottom: const TabBar(
+            dividerColor: AppColors.border,
+            indicatorColor: AppColors.primary,
+            indicatorSize: TabBarIndicatorSize.tab,
+            labelColor: AppColors.primaryLight,
+            unselectedLabelColor: AppColors.textMuted,
+            tabs: [
+              Tab(text: 'Profil'),
+              Tab(text: 'Paramètres'),
+              Tab(text: 'À propos'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _ProfileTab(
+              username: _username,
+              email: email,
+              initial: initial,
+              onEditUsername: _editUsername,
+            ),
+            _SettingsTab(
+              notificationsEnabled: _notificationsEnabled,
+              onNotificationsChanged: (value) {
+                setState(() => _notificationsEnabled = value);
+              },
+              onSignOut: _signOut,
+              onDeleteAccount: _confirmDelete,
+            ),
+            const _AboutTab(),
+          ],
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          Center(
-            child: Column(
-              children: [
-                Container(
-                  width: 88,
-                  height: 88,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: AppColors.neonGradient,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(initial,
-                      style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white)),
+    );
+  }
+}
+
+class _ProfileTab extends StatelessWidget {
+  final String username;
+  final String email;
+  final String initial;
+  final VoidCallback onEditUsername;
+
+  const _ProfileTab({
+    required this.username,
+    required this.email,
+    required this.initial,
+    required this.onEditUsername,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        Center(
+          child: Column(
+            children: [
+              Container(
+                width: 88,
+                height: 88,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppColors.neonGradient,
                 ),
-                const SizedBox(height: 16),
-                Text(_username, style: Theme.of(context).textTheme.titleLarge),
-                if (email.isNotEmpty)
-                  Text(email,
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 13)),
-              ],
+                alignment: Alignment.center,
+                child: Text(
+                  initial,
+                  style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(username, style: Theme.of(context).textTheme.titleLarge),
+              if (email.isNotEmpty)
+                Text(
+                  email,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 13,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 36),
+        const SectionLabel('Informations personnelles'),
+        const SizedBox(height: 12),
+        _SettingTile(
+          icon: Icons.badge_outlined,
+          label: 'Pseudonyme',
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 120),
+                child: Text(
+                  username,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(
+                Icons.edit_outlined,
+                color: AppColors.primary,
+                size: 18,
+              ),
+            ],
+          ),
+          onTap: onEditUsername,
+        ),
+        const SizedBox(height: 10),
+        _SettingTile(
+          icon: Icons.mail_outline,
+          label: 'Adresse e-mail',
+          trailing: Flexible(
+            child: Text(
+              email,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 13,
+              ),
             ),
           ),
-          const SizedBox(height: 36),
-          const SectionLabel('Compte'),
-          const SizedBox(height: 12),
-          _SettingTile(
-            icon: Icons.badge_outlined,
-            label: 'Pseudonyme',
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsTab extends StatelessWidget {
+  final bool notificationsEnabled;
+  final ValueChanged<bool> onNotificationsChanged;
+  final VoidCallback onSignOut;
+  final VoidCallback onDeleteAccount;
+
+  const _SettingsTab({
+    required this.notificationsEnabled,
+    required this.onNotificationsChanged,
+    required this.onSignOut,
+    required this.onDeleteAccount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        const SectionLabel('Préférences'),
+        const SizedBox(height: 12),
+        _SettingTile(
+          icon: Icons.notifications_none,
+          label: 'Notifications',
+          trailing: Switch(
+            value: notificationsEnabled,
+            onChanged: onNotificationsChanged,
+          ),
+        ),
+        const SizedBox(height: 32),
+        const SectionLabel('Session'),
+        const SizedBox(height: 12),
+        _SettingTile(
+          icon: Icons.logout,
+          label: 'Se déconnecter',
+          onTap: onSignOut,
+        ),
+        const SizedBox(height: 32),
+        const SectionLabel('Zone sensible'),
+        const SizedBox(height: 8),
+        const Text(
+          'La suppression du compte est définitive et efface les données associées.',
+          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+        ),
+        const SizedBox(height: 12),
+        _SettingTile(
+          icon: Icons.delete_forever,
+          label: 'Supprimer mon compte',
+          color: AppColors.danger,
+          onTap: onDeleteAccount,
+        ),
+      ],
+    );
+  }
+}
+
+class _AboutTab extends StatelessWidget {
+  const _AboutTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        const Center(
+          child: Icon(Icons.graphic_eq, size: 64, color: AppColors.primary),
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child:
+              Text('STYMA', style: Theme.of(context).textTheme.headlineMedium),
+        ),
+        const SizedBox(height: 6),
+        const Center(
+          child: Text(
+            'Version 0.1.0',
+            style: TextStyle(color: AppColors.textMuted),
+          ),
+        ),
+        const SizedBox(height: 28),
+        const _AboutCard(
+          icon: Icons.auto_awesome,
+          title: 'L’expérience STYMA',
+          description:
+              'Une application conçue pour rapprocher STYMA de son public avant, pendant et après les concerts.',
+        ),
+        const SizedBox(height: 12),
+        const _AboutCard(
+          icon: Icons.headphones_outlined,
+          title: 'Musique et communauté',
+          description:
+              'Découvre les morceaux, vote pendant les lives, aime tes titres préférés et échange avec la communauté.',
+        ),
+        const SizedBox(height: 12),
+        const _AboutCard(
+          icon: Icons.local_activity_outlined,
+          title: 'Concerts et actualités',
+          description:
+              'Retrouve les prochains événements, les réseaux officiels et toute l’actualité de STYMA.',
+        ),
+        const SizedBox(height: 28),
+        const Center(
+          child: Text(
+            '© 2026 STYMA — Tous droits réservés',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AboutCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _AboutCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: AppColors.primary, size: 24),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_username,
-                    style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 13)),
-                const SizedBox(width: 6),
-                const Icon(Icons.edit_outlined,
-                    color: AppColors.primary, size: 18),
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 6),
+                Text(description),
               ],
             ),
-            onTap: _editUsername,
-          ),
-          const SizedBox(height: 28),
-          const SectionLabel('Préférences'),
-          const SizedBox(height: 12),
-          _SettingTile(
-            icon: Icons.notifications_none,
-            label: 'Notifications',
-            trailing: Switch(
-              value: _notificationsEnabled,
-              onChanged: (v) => setState(() => _notificationsEnabled = v),
-            ),
-          ),
-          const SizedBox(height: 10),
-          _SettingTile(
-            icon: Icons.info_outline,
-            label: 'À propos',
-            trailing:
-                const Icon(Icons.chevron_right, color: AppColors.textMuted),
-            onTap: () => showAboutDialog(
-              context: context,
-              applicationName: 'STYMA',
-              applicationVersion: '0.1.0',
-              applicationLegalese: '© 2026 STYMA',
-            ),
-          ),
-          const SizedBox(height: 36),
-          _SettingTile(
-            icon: Icons.logout,
-            label: 'Se déconnecter',
-            color: AppColors.danger,
-            onTap: _signOut,
-          ),
-          const SizedBox(height: 10),
-          _SettingTile(
-            icon: Icons.delete_forever,
-            label: 'Supprimer mon compte',
-            color: AppColors.danger,
-            onTap: _confirmDelete,
           ),
         ],
       ),
