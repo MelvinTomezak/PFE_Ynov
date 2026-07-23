@@ -132,6 +132,9 @@ class _TrackRow extends StatelessWidget {
                 color: track.isLiked ? AppColors.danger : AppColors.textMuted,
                 label: '${track.likeCount}',
                 tooltip: track.isLiked ? 'Retirer le like' : 'Aimer ce morceau',
+                semanticLabel: track.isLiked
+                    ? "Retirer le like. ${track.likeCount} j'aime"
+                    : "Aimer ce morceau. ${track.likeCount} j'aime",
                 onTap: () async {
                   final ok = await vm.toggleLike(track);
                   if (!ok && context.mounted) {
@@ -149,6 +152,8 @@ class _TrackRow extends StatelessWidget {
                 color: AppColors.primaryLight,
                 label: '${track.commentCount}',
                 tooltip: 'Voir les commentaires',
+                semanticLabel:
+                    "Voir les commentaires. ${track.commentCount} commentaires",
                 onTap: () => _showComments(context, vm, track),
               ),
             ],
@@ -177,6 +182,7 @@ class _InteractionButton extends StatelessWidget {
   final Color color;
   final String label;
   final String tooltip;
+  final String? semanticLabel;
   final VoidCallback onTap;
 
   const _InteractionButton({
@@ -185,16 +191,20 @@ class _InteractionButton extends StatelessWidget {
     required this.label,
     required this.tooltip,
     required this.onTap,
+    this.semanticLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: tooltip,
+      // Le libellé annoncé inclut le compteur : l'icône seule ne suffit pas.
+      label: semanticLabel ?? tooltip,
+      excludeSemantics: true,
       child: IconButton(
         onPressed: onTap,
         tooltip: tooltip,
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
         icon: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

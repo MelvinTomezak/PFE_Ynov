@@ -1,11 +1,11 @@
 {
-    "name": "styma",
-    "short_name": "styma",
+    "name": "STYMA",
+    "short_name": "STYMA",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#000000",
+    "theme_color": "#38BDF8",
+    "description": "Application officielle de l'artiste STYMA.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

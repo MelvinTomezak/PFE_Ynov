@@ -56,6 +56,9 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.surface,
         labelStyle: const TextStyle(color: AppColors.textSecondary),
+        // Accessibilite : un message d'erreur doit rester lisible en entier.
+        errorMaxLines: 3,
+        helperMaxLines: 2,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.border),

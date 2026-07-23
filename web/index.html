@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -18,19 +18,19 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Application officielle de l&#39;artiste STYMA : biographie, musique, evenements, reseaux et boutique.">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="styma">
+  <meta name="apple-mobile-web-app-title" content="STYMA">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon.png">
   <link rel="shortcut icon" type="image/png" href="icons/favicon.png">
 
-  <title>styma</title>
+  <title>STYMA — Application officielle</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
@@ -43,5 +43,24 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script src="flutter_bootstrap.js" async></script>
+
+  <script>
+    // Accessibilité (RGAA 3.1.1 / WCAG 3.1.1) : la langue du document doit
+    // rester déclarée en français. Flutter web réécrit cet attribut au
+    // démarrage ; on le rétablit et on le maintient.
+    (function () {
+      var html = document.documentElement;
+      function forcerLangueFr() {
+        if (html.getAttribute('lang') !== 'fr') {
+          html.setAttribute('lang', 'fr');
+        }
+      }
+      forcerLangueFr();
+      new MutationObserver(forcerLangueFr).observe(html, {
+        attributes: true,
+        attributeFilter: ['lang'],
+      });
+    })();
+  </script>
 </body>
 </html>

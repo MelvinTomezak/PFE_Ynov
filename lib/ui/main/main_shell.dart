@@ -145,25 +145,35 @@ class _ProfileAvatar extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
-        child: Container(
-          width: 38,
-          height: 38,
-          padding: const EdgeInsets.all(2),
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: AppColors.neonGradient,
-          ),
-          child: Container(
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.background,
-            ),
-            child: Text(initial,
-                style: const TextStyle(
+        // Accessibilité : zone cliquable d'au moins 48 x 48 px.
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: Center(
+            child: Container(
+              width: 38,
+              height: 38,
+              padding: const EdgeInsets.all(2),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: AppColors.neonGradient,
+              ),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.background,
+                ),
+                child: Text(
+                  initial,
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
-                    fontSize: 15)),
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),

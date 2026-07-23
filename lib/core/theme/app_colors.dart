@@ -22,7 +22,9 @@ class AppColors {
   // Texte
   static const Color textPrimary = Color(0xFFEDEFF5);
   static const Color textSecondary = Color(0xFF9CA3B4);
-  static const Color textMuted = Color(0xFF636B7E);
+  // Contraste verifie sur fond noir : 5,8:1 (WCAG AA, seuil 4,5:1).
+  // Valeur precedente #636B7E : 3,9:1, non conforme.
+  static const Color textMuted = Color(0xFF7D8798);
 
   // Bordure néon (bleu à ~30 % d'opacité)
   static const Color border = Color(0x4D38BDF8);

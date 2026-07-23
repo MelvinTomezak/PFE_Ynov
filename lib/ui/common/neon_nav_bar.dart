@@ -83,7 +83,11 @@ class _NeonNavButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 7),
+          // Accessibilité : cible tactile d'au moins 48 px de hauteur.
+          // Pas d'alignment ici : il ferait occuper au Container toute la
+          // hauteur disponible, non bornée dans une Row.
+          constraints: const BoxConstraints(minHeight: 48),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(12),
@@ -103,6 +107,7 @@ class _NeonNavButton extends StatelessWidget {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 selected ? item.selectedIcon : item.icon,
@@ -123,7 +128,7 @@ class _NeonNavButton extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 8,
+                  fontSize: 9,
                   height: 1,
                   color: contentColor,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
