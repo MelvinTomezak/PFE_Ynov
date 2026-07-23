@@ -1,0 +1,138 @@
+name: CI/CD
+
+# Chaîne unique : le déploiement n'a lieu que si l'analyse et les tests
+# ont réussi. Un code dont les tests échouent ne peut donc pas être publié.
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement à la fois.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  # Seuil minimal de couverture de code accepté.
+  COUVERTURE_MINIMALE: 65
+
+jobs:
+  # ------------------------------------------------------------------
+  # 1. INTÉGRATION CONTINUE : analyse statique, tests et couverture
+  # ------------------------------------------------------------------
+  qualite:
+    name: Analyse & tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Installation des dépendances
+        run: flutter pub get
+
+      # Le fichier .env réel n'est pas versionné : on en génère un neutre,
+      # suffisant pour construire le bundle et exécuter les tests.
+      - name: Création d'un .env pour la CI
+        run: |
+          echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
+          echo "SUPABASE_ANON_KEY=placeholder" >> .env
+
+      - name: Analyse statique
+        run: flutter analyze
+
+      - name: Tests unitaires et couverture
+        run: flutter test --coverage
+
+      - name: Contrôle du seuil de couverture
+        run: |
+          COUVERT=$(grep -c '^DA:.*,[1-9]' coverage/lcov.info || echo 0)
+          TOTAL=$(grep -c '^DA:' coverage/lcov.info || echo 0)
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "Aucune donnée de couverture trouvée."
+            exit 1
+          fi
+          TAUX=$(( 100 * COUVERT / TOTAL ))
+          echo "Couverture mesurée : ${TAUX}% (${COUVERT}/${TOTAL} lignes)"
+          echo "Seuil minimal requis : ${COUVERTURE_MINIMALE}%"
+          if [ "$TAUX" -lt "${COUVERTURE_MINIMALE}" ]; then
+            echo "::error::Couverture insuffisante : ${TAUX}% < ${COUVERTURE_MINIMALE}%"
+            exit 1
+          fi
+          echo "### Couverture de code : ${TAUX}%" >> $GITHUB_STEP_SUMMARY
+
+      - name: Publication du rapport de couverture
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-couverture
+          path: coverage/lcov.info
+          retention-days: 30
+
+  # ------------------------------------------------------------------
+  # 2. CONSTRUCTION : uniquement si la qualité est validée
+  # ------------------------------------------------------------------
+  construction:
+    name: Build web
+    needs: qualite
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Installation des dépendances
+        run: flutter pub get
+
+      # Les identifiants proviennent des secrets GitHub : ils ne figurent
+      # jamais dans le dépôt.
+      - name: Création du fichier .env
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+
+      # base-href = nom du dépôt (le site est servi sous /PFE_Ynov/).
+      - name: Build de l'application web
+        run: flutter build web --release --base-href /PFE_Ynov/
+
+      - name: Mesure de la taille du build
+        run: |
+          TAILLE=$(du -sm build/web | cut -f1)
+          echo "Taille du build web : ${TAILLE} Mo"
+          echo "### Taille du build web : ${TAILLE} Mo" >> $GITHUB_STEP_SUMMARY
+
+      - name: Préparation de l'artefact Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  # ------------------------------------------------------------------
+  # 3. DÉPLOIEMENT : uniquement si la construction a réussi
+  # ------------------------------------------------------------------
+  deploiement:
+    name: Déploiement GitHub Pages
+    needs: construction
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publication
+        id: deployment
+        uses: actions/deploy-pages@v4
