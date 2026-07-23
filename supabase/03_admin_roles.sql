@@ -73,19 +73,10 @@ create policy "Admin modifier evenements" on public.events
 create policy "Admin supprimer evenements" on public.events
   for delete to authenticated using (public.is_admin());
 
-alter table public.products enable row level security;
-drop policy if exists "Lecture produits" on public.products;
-create policy "Lecture produits" on public.products
-  for select to authenticated using (true);
-drop policy if exists "Admin ajouter produits" on public.products;
-drop policy if exists "Admin modifier produits" on public.products;
-drop policy if exists "Admin supprimer produits" on public.products;
-create policy "Admin ajouter produits" on public.products
-  for insert to authenticated with check (public.is_admin());
-create policy "Admin modifier produits" on public.products
-  for update to authenticated using (public.is_admin()) with check (public.is_admin());
-create policy "Admin supprimer produits" on public.products
-  for delete to authenticated using (public.is_admin());
+-- Remarque : les politiques de la table « products » ne figurent pas ici.
+-- Cette table est créée par le script 04, qui définit lui-même ses politiques
+-- de lecture et d'écriture. Les déclarer ici créerait une dépendance
+-- circulaire entre les scripts 03 et 04.
 
 -- Après exécution, promouvoir manuellement le premier administrateur :
 -- update public.user_roles
